@@ -1,0 +1,33 @@
+<span class="btn btn-defaut btn-close pull-right">&times;</span>
+<h1>
+<span class="title"><%= utils.tr('spellcheck') %></span>
+<span class="spell-results">(<span class="misspelled-count"></span><span class="misspelled-separator">&nbsp;/&nbsp;</span><span class="word-count"></span>)</span>
+</h1>
+<div class="dialog">
+  <div class="row">
+    <div class="col-6">
+      <h2><%= utils.tr('misspelled') %></h2>
+      <div class="misspelled-word"><span class="label"></span></div>
+    </div>
+    <div class="col-6 suggestions">
+      <h2><%= utils.tr('suggestions') %></h2>
+      <div class="guess-list">
+        <ul></ul>
+      </div>
+      <div class="dictionary-select">
+        <select></select>
+      </div>
+    </div>
+  </div>
+  <div class="actions row fixed-bottom">
+    <button type="button" class="btn reset">Reset</button>
+    <button type="button" class="btn learn">Learn</button>
+    <button type="button" class="btn ignore">Ignore</button>
+    <button type="button" class="btn btn-primary next-word">NextWord</button>
+    <span class="pull-right">
+      <input type="text" class="replacement-text"></input>
+      <button type="button" class="btn replace">Replace</button>
+      <button type="button" class="btn replace-all">ReplaceAll</button>
+    </span>
+  </div>
+</div>
