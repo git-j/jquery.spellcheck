@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Spellcheck Demo Plugin</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+
+  <!-- scripts essential to all usercontrols -->
+  <script type="text/javascript" src="lib/jquery.js"></script>
+  <script type="text/javascript" src="lib/jquery-ui.js"></script>
+  <script type="text/javascript" src="lib/Iutils.js"></script>
+
+  <!-- scripts essential to this specific usercontrol -->
+  <script type="text/javascript" src="lib/bjspell.js"></script>
+  <script type="text/javascript" src="lib/de_DE.js"></script>
+  <script type="text/javascript" src="lib/en_US.js"></script>
+  <script type="text/javascript" src="lib/jquery.js"></script>
+  <script type="text/javascript" src="lib/jquery.scrollTo.js"></script>
+  <script type="text/javascript" src="lib/jquery.selectbox.js"></script>
+  <script type="text/javascript" src="lib/jquery-ui.js"></script>
+  <script type="text/javascript" src="lib/rangy-core.js"></script>
+  <script type="text/javascript" src="lib/rangy-selectionsaverestore.js"></script>
+  <script type="text/javascript" src="lib/rangy-serializer.js"></script>
+  <script type="text/javascript" src="lib/xregexp-all-min.js"></script>
+  <link href="lib/jquery.selectbox.css" rel="stylesheet" type="text/css" />
+  <!-- spellcheck -->
+  <script type="text/javascript" src="../src/jquery.spellcheck.js"></script>
+  <link href="../src/jquery.spellcheck.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<h1>Spellcheck Demo</h1>
+<p>Try changing the text to see how the plugin updates the checks</p>
+<div contenteditable="true">
+The MIT License (MIT)
+
+Copyright (c) 2014 git-j
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</div>
+<script type="text/javascript">
+var setupSpellcheck = function (   /*JQueryDOMObject*/ jq_dom_object , /*JQueryDOMObject*/ editable_dom_objects){
+  //INIT
+  var self = this;
+  //START
+  var content_node = jq_dom_object;
+  var spellcheck_display = $('> .spellcheck_display',content_node);
+  var editable_container = $('> .nugget',content_node);
+  var editables = $('>.content',editable_container);
+  var default_dictionary = 'en';
+  //CODE
+  spellcheck_display.spellcheck('destroy');
+  spellcheck_display.remove();
+  content_node.append('<div class="spellcheck_display minimized"><h1>' + utils.tr('spellcheck') + '</h1></div>');
+  spellcheck_display = $('.spellcheck_display',content_node); // completely recreated
+  if ( typeof editable_dom_objects !== 'undefined'
+    && editable_dom_objects.length > 0
+    ){
+    editables = editable_dom_objects;
+  }
+  default_dictionary = 'en_US';
+  if ( $('.Document .configuration .language').length ){
+    default_dictionary = $('.Document .configuration .language').text();
+  }
+  var spellcheck = new BJSpell(default_dictionary);
+  
+  spellcheck_display.spellcheck({
+    'check_elements': editables
+  , 'count_words': true
+  , 'check_on_input': true
+  , 'selected_dictionary': default_dictionary
+  , 'checkWord': function(word){return spellcheck.check(word);}
+  , 'learnWord': function(word){/* not supported by bjspell->implement your own return wke.learnSpellcheckWord(word);*/}
+  , 'ignoreWord': function(word){/* not supported by bjspell->implement your own return wke.ignoreSpellcheckWord(word);*/}
+  , 'getGuesses': function(word){return spellcheck.suggest(word);}
+  , 'setDictionary': function(language){spellcheck = new BJSpell(language);}
+  , 'getDictionaries': function(){return ['en_US','de_DE'];}
+  });
+  //TERM
+  return spellcheck_display;
+};
+
+var displaySpellcheckMultiple = function (   /*JQueryDOMObject*/ jq_dom_object , /*JQueryDOMObject*/ editable_dom_objects){
+  //INIT
+  var self = this;
+  //START
+  var content_node = jq_dom_object;
+  var scrollable_container = $('body');
+  var spellcheck_display = $('> .spellcheck_display',content_node);
+  var initial_bottom = scrollable_container.css('bottom');
+  var keep_dom_selection_on_store_initial = self.keep_dom_selection_on_store = true;
+  
+  //CODE
+  spellcheck_display = self.setupSpellcheck(jq_dom_object,editable_dom_objects);
+  spellcheck_display.spellcheck({'always_scroll_body':true});
+
+  spellcheck_display.bind('displayed',function(){
+    scrollable_container.animate({'margin-bottom': $('#content .spellcheck_display').css('height')});
+    self.keep_dom_selection_on_store = true;
+  });
+  spellcheck_display.bind('minimized',function(){
+    scrollable_container.animate({'margin-bottom': initial_bottom});
+    self.keep_dom_selection_on_store = keep_dom_selection_on_store_initial;
+  });
+  editable_dom_objects.bind('modified',function(){
+    self.keep_dom_selection_on_store = true;
+    self.store('',$(this));
+    self.keep_dom_selection_on_store = keep_dom_selection_on_store_initial;
+  });
+  //TERM
+  return spellcheck_display;
+};
+displaySpellcheckMultiple($('body'),$('[contenteditable="true"]'));
+</script>
+</body>
+</html>
